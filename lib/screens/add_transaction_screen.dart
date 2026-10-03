@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'edit_transaction_screen.dart';
-
+import '../database/database_helper.dart';
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
 
@@ -345,12 +345,33 @@ class _AddTransactionScreenState
               height: 48,
 
               child: ElevatedButton(
-                onPressed: () {Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const EditTransactionScreen(),
-                  ),
-                );},
+                onPressed: () async {
+                  final amount = double.tryParse(
+                    amountController.text.trim(),
+                  );
+
+                  if (amount == null || amount <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Vui lòng nhập số tiền hợp lệ'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  await DatabaseHelper.instance.insertTransaction({
+                    'title': category,
+                    'amount': amount,
+                    'type': isExpense ? 'expense' : 'income',
+                    'category': category,
+                    'date': formatDate(selectedDate),
+                    'note': noteController.text.trim(),
+                  });
+
+                  if (mounted) {
+                    Navigator.pop(context, true);
+                  }
+                },
 
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2375C8),

@@ -1,8 +1,30 @@
 import 'package:flutter/material.dart';
 import 'add_transaction_screen.dart';
-
-class HomeScreen extends StatelessWidget {
+import '../database/database_helper.dart';
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+  List<Map<String, dynamic>> transactions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadTransactions();
+  }
+
+  Future<void> loadTransactions() async {
+    final data = await DatabaseHelper.instance.getTransactions();
+
+    setState(() {
+      transactions = data;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -237,60 +259,25 @@ class HomeScreen extends StatelessWidget {
 
                     const SizedBox(height: 7),
 
-                    // Giao dịch 1
-                    _transactionItem(
-                      icon: Icons.restaurant,
-                      iconColor: const Color(0xFFFF812C),
-                      title: 'Ăn trưa',
-                      category: 'Ăn uống',
-                      date: '03/09/2024',
-                      amount: '-50.000 đ',
-                      amountColor: Colors.red,
-                    ),
+                    ...transactions.take(5).map((transaction) {
+                      final isIncome = transaction['type'] == 'Thu';
 
-                    // Giao dịch 2
-                    _transactionItem(
-                      icon: Icons.directions_car,
-                      iconColor: const Color(0xFF2D9BF0),
-                      title: 'Xăng xe',
-                      category: 'Di chuyển',
-                      date: '03/09/2024',
-                      amount: '-100.000 đ',
-                      amountColor: Colors.red,
-                    ),
-
-                    // Giao dịch 3
-                    _transactionItem(
-                      icon: Icons.attach_money,
-                      iconColor: const Color(0xFF39A952),
-                      title: 'Lương tháng 9',
-                      category: 'Thu nhập',
-                      date: '01/09/2024',
-                      amount: '+8.000.000 đ',
-                      amountColor: const Color(0xFF1DA342),
-                    ),
-
-                    // Giao dịch 4
-                    _transactionItem(
-                      icon: Icons.shopping_cart,
-                      iconColor: const Color(0xFF9B4DFF),
-                      title: 'Mua sắm',
-                      category: 'Mua sắm',
-                      date: '31/08/2024',
-                      amount: '-300.000 đ',
-                      amountColor: Colors.red,
-                    ),
-
-                    // Giao dịch 5
-                    _transactionItem(
-                      icon: Icons.school,
-                      iconColor: const Color(0xFF08A3A0),
-                      title: 'Học phí',
-                      category: 'Giáo dục',
-                      date: '30/08/2024',
-                      amount: '-500.000 đ',
-                      amountColor: Colors.red,
-                    ),
+                      return _transactionItem(
+                        icon: isIncome
+                            ? Icons.arrow_downward
+                            : Icons.arrow_upward,
+                        iconColor: isIncome
+                            ? const Color(0xFF39A952)
+                            : const Color(0xFFFF5C63),
+                        title: transaction['title'] ?? '',
+                        category: transaction['category'] ?? '',
+                        date: transaction['date'] ?? '',
+                        amount: '${isIncome ? '+' : '-'}${transaction['amount']} đ',
+                        amountColor: isIncome
+                            ? const Color(0xFF1DA342)
+                            : Colors.red,
+                      );
+                    }).toList(),
 
                     const SizedBox(height: 80),
                   ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/add_transaction_screen.dart';
 import 'screens/edit_transaction_screen.dart';
 import 'screens/home_screen.dart';
+import 'database/database_helper.dart';
 void main() {
   runApp(const ExpenseManagerApp());
 }
