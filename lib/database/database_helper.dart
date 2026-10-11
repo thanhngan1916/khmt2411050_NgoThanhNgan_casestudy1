@@ -110,11 +110,47 @@ class DatabaseHelper {
     );
   }
 
+
   Future<void> close() async {
     final db = await instance.database;
 
     await db.close();
 
     _database = null;
+  }
+
+// THÊM HÀM THỐNG KÊ Ở ĐÂY
+  Future<Map<String, double>> getTransactionSummary() async {
+    final db = await instance.database;
+
+    final incomeResult = await db.rawQuery(
+      '''
+    SELECT COALESCE(SUM(amount), 0) AS total
+    FROM transactions_table
+    WHERE type = ?
+    ''',
+      ['income'],
+    );
+
+    final expenseResult = await db.rawQuery(
+      '''
+    SELECT COALESCE(SUM(amount), 0) AS total
+    FROM transactions_table
+    WHERE type = ?
+    ''',
+      ['expense'],
+    );
+
+    final income =
+    (incomeResult.first['total'] as num).toDouble();
+
+    final expense =
+    (expenseResult.first['total'] as num).toDouble();
+
+    return {
+      'income': income,
+      'expense': expense,
+      'balance': income - expense,
+    };
   }
 }
